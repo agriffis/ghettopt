@@ -1,12 +1,12 @@
 #!/bin/bash
-#=============================================================================
-# simple bash command-line processing
-#
-# (c) Copyright 2008 Aron Griffis <agriffis@n01se.net>
-# Released under the GNU GPL v2
-#=============================================================================
 
-parse_cmdline() {
+ghettopt() {
+  # ghettopt, simple command-line processing in pure Bash.
+  # version 0.1
+  # Copyright 2008, 2012 Aron Griffis <aron@arongriffis.com>
+  # Released under the GNU GPL v3
+  # Email me to request another license if needed for your project.
+
     # extract long options from variable declarations
     declare getopt_long=$(set | \
         sed '/^opt_/!d; s/^opt_//; s/_/-/g;
