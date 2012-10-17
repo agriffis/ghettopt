@@ -80,9 +80,14 @@ will emit an error message and return non-zero status.
 
     ghettopt is compatible with Bash versions >= 2.05b
 
- 3. Does ghettopt have a test suite?
+ 4. Does ghettopt have a test suite?
 
     Yes, just clone the repo and run `test.bash`.
+
+ 5. How do you pronounce "ghettopt?"
+
+    The "pt" is silent, so it's pronounced like "ghetto" or "get-o".
+    That way it's not confused with "getopt" in conversation.
 
 # Full example
 
