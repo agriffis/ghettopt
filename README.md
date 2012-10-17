@@ -90,6 +90,7 @@ Here's a full example with some best practices:
         declare opt_config=$HOME/.myconfig
         declare opt_proxy=
         declare opt_force=false
+        declare shortopts=( c:config p:proxy f:force )
 
         ghettopt "$@" || exit
         set -- "${params[@]}"
