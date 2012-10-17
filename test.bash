@@ -38,13 +38,13 @@ reset() {
   opt_help() { help_called=1; }
   colon_value=
   opt_colon:() { colon_value=$1; }
-  opts=()
+  parsed_opts=()
   params=()
   status=0
 }
 
 check() {
-  # "opts" omitted intentionally... just makes things verbose
+  # "parsed_opts" omitted intentionally... just makes things verbose
   set | egrep '^(opt_.*|help_called|colon_value|params|status)='
 }
 

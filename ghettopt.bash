@@ -53,7 +53,7 @@ ghettopt() {
 
     # Figure out what getopt returned...
     declare opt var val
-    opts=()
+    parsed_opts=()
     while true; do
       [[ $1 != -- ]] || { shift; break; }
 
@@ -77,7 +77,7 @@ ghettopt() {
         # which has a (silly) negation of --no-no-something
         (*,"no-$opt",*)
           val=true
-          opts=( "${opts[@]}" "$1" )
+          parsed_opts=( "${parsed_opts[@]}" "$1" )
           shift ;;
         (*,"$opt",*)
           if [[ $opt == no-* ]]; then
@@ -86,11 +86,11 @@ ghettopt() {
           else
             val=true
           fi
-          opts=( "${opts[@]}" "$1" )
+          parsed_opts=( "${parsed_opts[@]}" "$1" )
           shift ;;
         (*,"$opt:",*) 
           val=$2
-          opts=( "${opts[@]}" "$1" "$2" )
+          parsed_opts=( "${parsed_opts[@]}" "$1" "$2" )
           shift 2 ;;
         (*)
           echo "error processing $1: not in \$go_long?" >&2
