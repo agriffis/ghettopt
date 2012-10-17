@@ -7,99 +7,147 @@ ghettopt() {
   # Released under the GNU GPL v3
   # Email me to request another license if needed for your project.
 
-  # extract long options from variable declarations
-  declare getopt_long=$(set | \
-    sed '/^opt_/!d; s/^opt_//; s/_/-/g;
-         s/\(.*\)=false$/\1 no-\1/;
-         s/\(.*\)=true$/\1 no-\1/;
-         s/=.*/:/; s/()//;' | xargs | sed 's/ /,/g')
+  _ghettopt_main() {
+    declare -a longs shorts
+    declare go_long go_short i o v
 
-  # augment the shortopts array with takes-a-value colon;
-  # for example f:file becomes f::file
-  declare shortopts=( "${shortopts[@]}" )
-  declare i x
-  for ((i=0; i<${#shortopts[@]}; i++)); do
-    x=${shortopts[i]}
-    if [[ ",$getopt_long," == *,"${x#?:}":,* ]]; then
-      shortopts[i]=${x/:/::}
-    fi
-  done
-  declare getopt_short=$(IFS=''; echo "${shortopts[*]%:*}")
+    # Extract long options from variable declarations.
+    for o in $(compgen -A variable opt_); do
+      v=${!o}; o=${o#opt_}; o=${o//_/-}
+      if [[ $v == false || $v == true ]]; then
+        longs=( "${longs[@]}" ${o//_/-} no-${o//_/-} )
+      else
+        longs=( "${longs[@]}" ${o//_/-}: )
+      fi
+    done
 
-  declare args
-  args=$(getopt -o "$getopt_short" \
-    --long "$getopt_long" -n "$0" -- "$@") || return
-  eval set -- "$args"
+    # Extract long options from function declarations.
+    # These are allowed to have colons on the end.
+    for o in $(compgen -A function opt_); do
+      longs=( "${longs[@]}" "${o#opt_}" )
+    done
 
-  declare opt var val
-  parsed_opts=()
-  while true; do
-    [[ $1 == -- ]] && { shift; break; }
+    # Make it a comma-separated list.
+    go_long="${longs[*]}"
+    go_long="${go_long// /,}"
 
-    # translate short options to long
-    if [[ $1 == -? ]]; then
-      opt=${1#-}
-      for x in "${shortopts[@]}"; do
-        if [[ $x == "$opt":* ]]; then
-          opt=${x##*:}
-          break
+    # Extract short options from $shortopts, add takes-a-value colon.
+    if [[ -n $shortopts ]]; then
+      shorts=( "${shortopts[@]%%:*}" )
+      for ((i=0; i<${#shortopts[@]}; i++)); do
+        o=${shortopts[i]#?:}
+        if [[ ,$go_long, == *,"$o":,* ]]; then
+          shorts[i]=${shorts[i]}:
         fi
       done
-    else
-      opt=${1#--}
     fi
 
-    # figure out $var and $val; shift positional params
-    var=opt_${opt//-/_}
-    case ",$getopt_long," in
-      # make sure to handle opt_no_something (--no-something) 
-      # which has a (silly) negation of --no-no-something
-      (*",no-$opt,"*)
-        val=true
-        parsed_opts=( "${parsed_opts[@]}" "$1" )
-        shift ;;
-      (*",$opt,"*)
-        if [[ $opt == no-* ]]; then
-          var=${var/no_/}
-          val=false
-        else
-          val=true
-        fi
-        parsed_opts=( "${parsed_opts[@]}" "$1" )
-        shift ;;
-      (*",$opt:,"*) 
-        val=$2
-        parsed_opts=( "${parsed_opts[@]}" "$1" "$2" )
-        shift 2 ;;
-      (*)
-        echo "error processing $1: not in getopt_long?" >&2
-        return 1 ;;
-    esac
+    # Make it a simple string.
+    go_short="${shorts[*]}"
+    go_short="${go_short// /}"
 
-    if [[ $(type -t "$var") == function ]]; then
-      $var
-    elif [[ $(type -t "$var:") == function ]]; then
-      $var: "$val"
-    elif is_array "$var"; then
-      eval "$var=( \"\${$var[@]}\" $(printf %q "$val") )"
-    elif is_var "$var"; then
-      eval "$var=\$val"
-    else
-      echo "error processing $var: no func/array/var?" >&2
+    # Call getopt!
+    declare args
+    args=$(getopt -o "$go_short" --long "$go_long" -n "$0" -- "$@") || return
+    eval set -- "$args"
+
+    # Figure out what getopt returned...
+    declare opt var val
+    opts=()
+    while true; do
+      [[ $1 != -- ]] || { shift; break; }
+
+      # Translate short options to long.
+      if [[ $1 == -? ]]; then
+        opt=${1#-}
+        for x in "${shortopts[@]}"; do
+          if [[ $x == "$opt":* ]]; then
+            opt=${x##*:}
+            break
+          fi
+        done
+      else
+        opt=${1#--}
+      fi
+
+      # Figure out $var and $val; shift positional params.
+      var=opt_${opt//-/_}
+      case ,"$go_long", in
+        # Make sure to handle opt_no_something (--no-something)
+        # which has a (silly) negation of --no-no-something
+        (*,"no-$opt",*)
+          val=true
+          opts=( "${opts[@]}" "$1" )
+          shift ;;
+        (*,"$opt",*)
+          if [[ $opt == no-* ]]; then
+            var=${var/no_/}
+            val=false
+          else
+            val=true
+          fi
+          opts=( "${opts[@]}" "$1" )
+          shift ;;
+        (*,"$opt:",*) 
+          val=$2
+          opts=( "${opts[@]}" "$1" "$2" )
+          shift 2 ;;
+        (*)
+          echo "error processing $1: not in \$go_long?" >&2
+          return 1 ;;
+      esac
+
+      if _ghettopt_is_function "$var"; then
+        $var
+      elif _ghettopt_is_function "$var:"; then
+        $var: "$val"
+      elif _ghettopt_is_array "$var"; then
+        eval "$var=( \"\${$var[@]}\" \"\$val\" )"
+      elif _ghettopt_is_var "$var"; then
+        eval "$var=\$val"
+      else
+        echo "error processing $var: no func/array/var?" >&2
+        return 1
+      fi
+    done
+
+    params=( "$@" )
+  }
+
+  _ghettopt_is_function() {
+    [[ $(type -t "$1") == function ]]
+  }
+
+  _ghettopt_is_array() {
+    set -- $(declare -p "$1" 2>/dev/null)
+    [[ $2 == -*a* ]]
+  }
+
+  _ghettopt_is_var() {
+    declare -p "$1" &>/dev/null
+  }
+
+  _ghettopt_version_check() {
+    if [[ -z $BASH_VERSION ]]; then
+      echo "ghettopt: unknown version of bash might not be compatible" >&2
       return 1
     fi
-  done
 
-  parsed_params=( "$@" )
-}
+    # This is a lexical comparison that should be sufficient forever.
+    if [[ $BASH_VERSION < 2.05b ]]; then
+      echo "ghettopt: bash $BASH_VERSION might not be compatible" >&2
+      return 1
+    fi
 
-is_var() {
-  declare -p "$1" &>/dev/null
-}
+    return 0
+  }
 
-is_array() {
-  set -- $(declare -p "$1" 2>/dev/null)
-  [[ $2 == -*a* ]]
+  _ghettopt_version_check
+  _ghettopt_main "$@"
+  declare status=$?
+  unset -f _ghettopt_main _ghettopt_version_check \
+    _ghettopt_is_function _ghettopt_is_array _ghettopt_is_var
+  return $status
 }
 
 # vim:sw=2
