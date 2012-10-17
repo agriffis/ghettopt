@@ -60,18 +60,26 @@ will emit an error message and return non-zero status.
 
 # FAQ
 
- 1. Is ghettopt pure Bash?
+ 1. Does ghettopt provide automatic help?
+
+    No, ghettopt does not provide automatic help.  You can declare
+    a function for it, though.  Don't forget to exit at the bottom. See the
+    full example below which does this.
+
+ 2. Is ghettopt pure Bash?
 
     Yes, except it depends on external GNU getopt. For maximum portability,
     for example to OS X, you can avoid this dependency by using
     [pure-getopt](https://bitbucket.org/agriffis/pure-getopt).  See the
     full example below which does this.
 
- 2. Does ghettopt provide automatic help?
+ 3. What Bash versions does ghettopt support?
 
-    No, ghettopt does not provide automatic help.  You can declare
-    a function for it, though.  Don't forget to exit at the bottom. See the
-    full example below which does this.
+    ghettopt is compatible with Bash versions >= 2.05b
+
+ 3. Does ghettopt have a test suite?
+
+    Yes, just clone the repo and run `test.bash`.
 
 # Full example
 
