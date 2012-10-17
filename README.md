@@ -3,6 +3,7 @@
 This is simple Bash command-line parsing. No loops, no shifting, no
 worrying about quoting. Just declare some variables and call ghettopt:
 
+    :::bash
     opt_config=$HOME/.myconfig
     opt_proxy=
     opt_force=false
@@ -16,6 +17,7 @@ contains `/dev/null`.
 Any non-option parameters on the command-line can be found in the array
 `$params`. If you'd like these back in `$@`, do it like this:
 
+    :::bash
     ghettopt "$@" || exit
     set -- "${params[@]}"
 
@@ -47,6 +49,7 @@ impossible to have a short option without a long option equivalent.
 
 For example, to add short options to the example program:
 
+    :::bash
     shortopts=( c:config p:proxy f:force )
 
 ## Results of parsing
