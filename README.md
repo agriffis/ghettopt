@@ -9,10 +9,6 @@ worrying about quoting. Just declare some variables and call ghettopt:
 
     ghettopt "$@" || exit
 
-This program has four options: `--config`, `--proxy`, `--force` and
-`--no-force`. Since `opt_force` is declared as a boolean, it automatically
-gets the negated option.
-
 After calling ghettopt, the results can be found in the variables. For
 example, if the user specified `--config=/dev/null` then `$opt_config` now
 contains `/dev/null`.
