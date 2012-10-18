@@ -4,8 +4,7 @@ ghettopt() {
   # ghettopt, simple command-line processing in pure Bash.
   # version 1.0
   # Copyright 2008, 2012 Aron Griffis <aron@arongriffis.com>
-  # Released under the GNU GPL v3
-  # Email me to request another license if needed for your project.
+  # Released under the Mozilla Public License 2.0
 
   _ghettopt_main() {
     declare -a longs shorts
