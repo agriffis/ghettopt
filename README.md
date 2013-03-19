@@ -5,12 +5,13 @@
 This is simple Bash command-line parsing. No loops, no shifting, no
 worrying about quoting. Just declare some variables and call ghettopt:
 
-    :::bash
-    opt_config=$HOME/.myconfig
-    opt_proxy=
-    opt_force=false
+```bash
+opt_config=$HOME/.myconfig
+opt_proxy=
+opt_force=false
 
-    ghettopt "$@" || exit
+ghettopt "$@" || exit
+```
 
 After calling ghettopt, the results can be found in the variables. For
 example, if the user specified `--config=/dev/null` then `$opt_config` now
@@ -19,9 +20,10 @@ contains `/dev/null`.
 Any non-option parameters on the command-line can be found in the array
 `$params`. If you'd like these back in `$@`, do it like this:
 
-    :::bash
-    ghettopt "$@" || exit
-    set -- "${params[@]}"
+```bash
+ghettopt "$@" || exit
+set -- "${params[@]}"
+```
 
 # Reference
 
@@ -51,8 +53,9 @@ impossible to have a short option without a long option equivalent.
 
 For example, to add short options to the example program:
 
-    :::bash
-    shortopts=( c:config p:proxy f:force )
+```bash
+shortopts=( c:config p:proxy f:force )
+```
 
 ## Results of parsing
 
@@ -95,64 +98,66 @@ will emit an error message and return non-zero status.
 
 Here's a full example with some best practices:
 
-    #!/bin/bash
+```bash
+#!/bin/bash
 
-    main() {
-        # Clear inadvertent options from the environment
-        unset ${!opt_*}
+main() {
+    # Clear inadvertent options from the environment
+    unset ${!opt_*}
 
-        declare opt_config=$HOME/.myconfig
-        declare opt_proxy=
-        declare opt_force=false
-        declare shortopts=( c:config p:proxy f:force )
+    declare opt_config=$HOME/.myconfig
+    declare opt_proxy=
+    declare opt_force=false
+    declare shortopts=( c:config p:proxy f:force )
 
-        ghettopt "$@" || exit
-        set -- "${params[@]}"
+    ghettopt "$@" || exit
+    set -- "${params[@]}"
 
-        echo "Config file is $opt_config"
-        
-        if [[ -n $opt_proxy ]]; then
-            echo "Proxy is $opt_proxy"
-        fi
+    echo "Config file is $opt_config"
+    
+    if [[ -n $opt_proxy ]]; then
+        echo "Proxy is $opt_proxy"
+    fi
 
-        if $opt_force; then
-            echo "May the force be with you"
-        fi
+    if $opt_force; then
+        echo "May the force be with you"
+    fi
 
-        if [[ $# -gt 0 ]]; then
-            echo "Non-option parameters are:"
-            for f; do
-                echo "   $f"
-            done
-        fi
+    if [[ $# -gt 0 ]]; then
+        echo "Non-option parameters are:"
+        for f; do
+            echo "   $f"
+        done
+    fi
 
-        exit 0
-    }
+    exit 0
+}
 
-    opt_help() {
-        echo "usage: $0 [options] [files]"
-        echo
-        echo "  -c --config FILE  Read an alternate config,"
-        echo "                    default: $opt_config"
-        echo "  -f --force        Clobber existing files"
-        echo "  -p --proxy PROXY  Use a network proxy"
-        exit 0
-    }
+opt_help() {
+    echo "usage: $0 [options] [files]"
+    echo
+    echo "  -c --config FILE  Read an alternate config,"
+    echo "                    default: $opt_config"
+    echo "  -f --force        Clobber existing files"
+    echo "  -p --proxy PROXY  Use a network proxy"
+    exit 0
+}
 
-    opt_version() {
-        echo "$0 version 0.4"
-        exit 0
-    }
+opt_version() {
+    echo "$0 version 0.4"
+    exit 0
+}
 
-    # INSERT ghettopt function here
-    ghettopt() {
-        ...
-    }
+# INSERT ghettopt function here
+ghettopt() {
+    ...
+}
 
-    # INSERT getopt function here (optional, from pure-getopt)
-    getopt() {
-        ...
-    }
+# INSERT getopt function here (optional, from pure-getopt)
+getopt() {
+    ...
+}
 
-    # CALL main at very bottom, passing script args
-    main "$@"
+# CALL main at very bottom, passing script args
+main "$@"
+```
