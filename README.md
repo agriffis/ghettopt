@@ -1,5 +1,7 @@
 # ghettopt
 
+[![Build Status](https://secure.travis-ci.org/agriffis/ghettopt.png?branch=master)](http://travis-ci.org/agriffis/ghettopt)
+
 This is simple Bash command-line parsing. No loops, no shifting, no
 worrying about quoting. Just declare some variables and call ghettopt:
 
