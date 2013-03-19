@@ -73,7 +73,7 @@ will emit an error message and return non-zero status.
 
     Yes, except it depends on external GNU getopt. For maximum portability,
     for example to OS X, you can avoid this dependency by using
-    [pure-getopt](https://bitbucket.org/agriffis/pure-getopt).  See the
+    [pure-getopt](https://github.com/agriffis/pure-getopt).  See the
     full example below which does this.
 
  3. What Bash versions does ghettopt support?
