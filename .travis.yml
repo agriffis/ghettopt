@@ -1,11 +1,8 @@
 language: bash
+env:
+  - BASHES="bash2.05b bash3.0.16 bash3.2.48 bash4.2.45"
 before_install:
   - sudo add-apt-repository ppa:agriffis/bashes
   - sudo apt-get update -qq
-  - sudo apt-get install -qq bash2.05b bash3.0.16 bash3.2.48 bash4.2.45
-env:
-  - MYBASH=/usr/bin/bash2.05b
-  - MYBASH=/usr/bin/bash3.0.16
-  - MYBASH=/usr/bin/bash3.2.48
-  - MYBASH=/usr/bin/bash4.2.45
-script: $MYBASH test.bash
+  - sudo apt-get install -qq $BASHES
+script: bash travis.bash
