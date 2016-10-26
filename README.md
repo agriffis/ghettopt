@@ -97,5 +97,19 @@ will emit an error message and return non-zero status.
 # Full example
 
 See [example.bash](example.bash) for a full example with some best
-practices.
+practices. Or use this function whenever you want to start a new script:
 
+```bash
+ghettopt-new() {
+    [[ -n $1 ]] || { echo "need script name" >&2; return 1; }
+    [[ ! -s $1 ]] || { echo "won't clobber $1, aborting" >&2; return 2; }
+    curl -s https://raw.githubusercontent.com/agriffis/ghettopt/master/example.bash > "$1"
+}
+```
+
+Now you can initialize a new script with:
+
+
+```bash
+ghettopt-new myscript.bash
+```
