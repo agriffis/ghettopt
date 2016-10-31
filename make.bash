@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# make.bash -- generate example.bash, inserting the latest getopt and
+#              ghettopt functions
 
 main() {
     declare ghettopt_script getopt_script example_script
