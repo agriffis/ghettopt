@@ -52,7 +52,7 @@ opt_version() {
 
 ghettopt() {
   # ghettopt, simple command-line processing in pure Bash.
-  # version 1.0
+  # version 1.0.1
   #
   # Copyright 2008, 2012 Aron Griffis <aron@arongriffis.com>
   #
@@ -83,9 +83,9 @@ ghettopt() {
     for o in $(compgen -A variable opt_); do
       v=${!o}; o=${o#opt_}; o=${o//_/-}
       if [[ $v == false || $v == true ]]; then
-        longs=( "${longs[@]}" ${o//_/-} no-${o//_/-} )
+        longs=( "${longs[@]}" "${o//_/-}" "no-${o//_/-}" )
       else
-        longs=( "${longs[@]}" ${o//_/-}: )
+        longs=( "${longs[@]}" "${o//_/-}:" )
       fi
     done
 
@@ -100,6 +100,7 @@ ghettopt() {
     go_long="${go_long// /,}"
 
     # Extract short options from $shortopts, add takes-a-value colon.
+    # shellcheck disable=SC2154
     if [[ -n $shortopts ]]; then
       shorts=( "${shortopts[@]%%:*}" )
       for ((i=0; i<${#shortopts[@]}; i++)); do
@@ -166,10 +167,11 @@ ghettopt() {
       esac
 
       if _ghettopt_is_function "$var"; then
-        $var
+        "$var"
       elif _ghettopt_is_function "$var:"; then
-        $var: "$val"
+        "$var:" "$val"
       elif _ghettopt_is_array "$var"; then
+        # shellcheck disable=SC1087
         eval "$var=( \"\${$var[@]}\" \"\$val\" )"
       elif _ghettopt_is_var "$var"; then
         eval "$var=\$val"
@@ -179,6 +181,7 @@ ghettopt() {
       fi
     done
 
+    # shellcheck disable=SC2034
     params=( "$@" )
   }
 
@@ -187,6 +190,7 @@ ghettopt() {
   }
 
   _ghettopt_is_array() {
+    # shellcheck disable=SC2046
     set -- $(declare -p "$1" 2>/dev/null)
     [[ $2 == -*a* ]]
   }
@@ -220,9 +224,9 @@ ghettopt() {
 
 getopt() {
   # pure-getopt, a drop-in replacement for GNU getopt in pure Bash.
-  # version 1.4
+  # version 1.4.2
   #
-  # Copyright 2012 Aron Griffis <aron@arongriffis.com>
+  # Copyright 2012-2018 Aron Griffis <aron@scampersand.com>
   #
   # Permission is hereby granted, free of charge, to any person obtaining
   # a copy of this software and associated documentation files (the
@@ -231,10 +235,10 @@ getopt() {
   # distribute, sublicense, and/or sell copies of the Software, and to
   # permit persons to whom the Software is furnished to do so, subject to
   # the following conditions:
-  # 
+  #
   # The above copyright notice and this permission notice shall be included
   # in all copies or substantial portions of the Software.
-  # 
+  #
   # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
   # OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
   # MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
@@ -299,7 +303,7 @@ getopt() {
         (-h|--help)
           _getopt_help
           return 2  # as does GNU getopt
-          ;; 
+          ;;
 
         (-l|--longoptions)
           long="$long${long:+,}$2"
@@ -340,7 +344,7 @@ getopt() {
           return 4 ;;
 
         (-V|--version)
-          echo "pure-getopt 1.4"
+          echo "pure-getopt 1.4.2"
           return 0 ;;
 
         (--)
@@ -367,7 +371,7 @@ getopt() {
     if [[ $short == -* ]]; then
       # Leading dash means generate output in place rather than reordering,
       # unless we're already in compatibility mode.
-      [[ $flags == *c* ]] || flags=i$flgas
+      [[ $flags == *c* ]] || flags=i$flags
       short=${short#?}
     elif [[ $short == +* ]]; then
       # Leading plus means POSIXLY_CORRECT, unless we're already in
@@ -429,14 +433,8 @@ getopt() {
           elif [[ ,"$long", == *,"${o#--}":,* ]]; then
             opts=( "${opts[@]}" "$o" "${1#*=}" )
           elif [[ ,"$long", == *,"${o#--}",* ]]; then
-            if $alt_recycled; then
-              # GNU getopt isn't self-consistent about whether it reports
-              # errors with a single dash or double dash in alternative
-              # mode, but in this case it reports with a single dash.
-              _getopt_err "$name: option '${o#-}' doesn't allow an argument"
-            else
-              _getopt_err "$name: option '$o' doesn't allow an argument"
-            fi
+            if $alt_recycled; then o=${o#-}; fi
+            _getopt_err "$name: option '$o' doesn't allow an argument"
             error=1
           else
             echo "getopt: assertion failed (1)" >&2
@@ -458,6 +456,7 @@ getopt() {
               shift
               opts=( "${opts[@]}" "$o" "$1" )
             else
+              if $alt_recycled; then o=${o#-}; fi
               _getopt_err "$name: option '$o' requires an argument"
               error=1
             fi
@@ -485,7 +484,7 @@ getopt() {
                 (0)
                   # Unambiguous match. Let the long options parser handle
                   # it, with a flag to get the right error message.
-                  set -- "-$@"
+                  set -- "-$1" "${@:2}"
                   alt_recycled=true
                   continue ;;
                 (1)
@@ -606,20 +605,20 @@ getopt() {
         matches=( "${matches[@]}" "$a" )
       elif [[ $flags == *a* && $q == -[^-]* && $a == -"$q"* ]]; then
         # Abbreviated alternative match.
-        matches=( "${matches[@]}" "$a" )
+        matches=( "${matches[@]}" "${a#-}" )
       fi
     done
     case ${#matches[@]} in
       (0)
         [[ $flags == *q* ]] || \
-        printf "$name: unrecognized option %s\n" >&2 \
+        printf "$name: unrecognized option %s\\n" >&2 \
           "$(_getopt_quote "$q")"
         return 2 ;;
       (1)
-        printf '%s' "$matches"; return 0 ;;
-      (*) 
+        printf '%s' "${matches[0]}"; return 0 ;;
+      (*)
         [[ $flags == *q* ]] || \
-        printf "$name: option %s is ambiguous; possibilities: %s\n" >&2 \
+        printf "$name: option %s is ambiguous; possibilities: %s\\n" >&2 \
           "$(_getopt_quote "$q")" "$(_getopt_quote "${matches[@]}")"
         return 1 ;;
     esac
@@ -666,23 +665,27 @@ getopt() {
     cat <<-EOT >&2
 	
 	Usage:
-	 getopt optstring parameters
-	 getopt [options] [--] optstring parameters
-	 getopt [options] -o|--options optstring [options] [--] parameters
+	 getopt <optstring> <parameters>
+	 getopt [options] [--] <optstring> <parameters>
+	 getopt [options] -o|--options <optstring> [options] [--] <parameters>
+	
+	Parse command options.
 	
 	Options:
-	 -a, --alternative            Allow long options starting with single -
-	 -h, --help                   This small usage guide
-	 -l, --longoptions <longopts> Long options to be recognized
-	 -n, --name <progname>        The name under which errors are reported
-	 -o, --options <optstring>    Short options to be recognized
-	 -q, --quiet                  Disable error reporting by getopt(3)
-	 -Q, --quiet-output           No normal output
-	 -s, --shell <shell>          Set shell quoting conventions
-	 -T, --test                   Test for getopt(1) version
-	 -u, --unquote                Do not quote the output
-	 -V, --version                Output version information
+	 -a, --alternative             allow long options starting with single -
+	 -l, --longoptions <longopts>  the long options to be recognized
+	 -n, --name <progname>         the name under which errors are reported
+	 -o, --options <optstring>     the short options to be recognized
+	 -q, --quiet                   disable error reporting by getopt(3)
+	 -Q, --quiet-output            no normal output
+	 -s, --shell <shell>           set quoting conventions to those of <shell>
+	 -T, --test                    test for getopt(1) version
+	 -u, --unquoted                do not quote the output
 	
+	 -h, --help     display this help and exit
+	 -V, --version  output version information and exit
+	
+	For more details see getopt(1).
 	EOT
   }
 
