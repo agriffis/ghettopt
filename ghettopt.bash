@@ -2,7 +2,7 @@
 
 ghettopt() {
   # ghettopt, simple command-line processing in pure Bash.
-  # version 1.0
+  # version 1.0.1
   #
   # Copyright 2008, 2012 Aron Griffis <aron@arongriffis.com>
   #
@@ -33,9 +33,9 @@ ghettopt() {
     for o in $(compgen -A variable opt_); do
       v=${!o}; o=${o#opt_}; o=${o//_/-}
       if [[ $v == false || $v == true ]]; then
-        longs=( "${longs[@]}" ${o//_/-} no-${o//_/-} )
+        longs=( "${longs[@]}" "${o//_/-}" "no-${o//_/-}" )
       else
-        longs=( "${longs[@]}" ${o//_/-}: )
+        longs=( "${longs[@]}" "${o//_/-}:" )
       fi
     done
 
@@ -50,6 +50,7 @@ ghettopt() {
     go_long="${go_long// /,}"
 
     # Extract short options from $shortopts, add takes-a-value colon.
+    # shellcheck disable=SC2154
     if [[ -n $shortopts ]]; then
       shorts=( "${shortopts[@]%%:*}" )
       for ((i=0; i<${#shortopts[@]}; i++)); do
@@ -116,10 +117,11 @@ ghettopt() {
       esac
 
       if _ghettopt_is_function "$var"; then
-        $var
+        "$var"
       elif _ghettopt_is_function "$var:"; then
-        $var: "$val"
+        "$var:" "$val"
       elif _ghettopt_is_array "$var"; then
+        # shellcheck disable=SC1087
         eval "$var=( \"\${$var[@]}\" \"\$val\" )"
       elif _ghettopt_is_var "$var"; then
         eval "$var=\$val"
@@ -129,6 +131,7 @@ ghettopt() {
       fi
     done
 
+    # shellcheck disable=SC2034
     params=( "$@" )
   }
 
@@ -137,6 +140,7 @@ ghettopt() {
   }
 
   _ghettopt_is_array() {
+    # shellcheck disable=SC2046
     set -- $(declare -p "$1" 2>/dev/null)
     [[ $2 == -*a* ]]
   }
