@@ -224,9 +224,9 @@ ghettopt() {
 
 getopt() {
   # pure-getopt, a drop-in replacement for GNU getopt in pure Bash.
-  # version 1.4.2
+  # version 1.4.4
   #
-  # Copyright 2012-2018 Aron Griffis <aron@scampersand.com>
+  # Copyright 2012-2020 Aron Griffis <aron@scampersand.com>
   #
   # Permission is hereby granted, free of charge, to any person obtaining
   # a copy of this software and associated documentation files (the
@@ -259,7 +259,7 @@ getopt() {
     # "options -- parameters" on stdout.
 
     declare parsed status
-    declare short long name flags
+    declare short long='' name flags=''
     declare have_short=false
 
     # Synopsis from getopt man-page:
@@ -282,7 +282,7 @@ getopt() {
     # First parse always uses flags=p since getopt always parses its own
     # arguments effectively in this mode.
     parsed=$(_getopt_parse getopt ahl:n:o:qQs:TuV \
-      alternative,help,longoptions:,name,options:,quiet,quiet-output,shell:,test,version \
+      alternative,help,longoptions:,name:,options:,quiet,quiet-output,shell:,test,version \
       p "$@")
     status=$?
     if [[ $status != 0 ]]; then
@@ -344,7 +344,7 @@ getopt() {
           return 4 ;;
 
         (-V|--version)
-          echo "pure-getopt 1.4.2"
+          echo "pure-getopt 1.4.4"
           return 0 ;;
 
         (--)
@@ -589,7 +589,7 @@ getopt() {
     # status 2.)  If there is no match at all, prints a message on stderr
     # and returns 2.
     declare a q="$1"
-    declare -a matches
+    declare -a matches=()
     shift
     for a; do
       if [[ $q == "$a" ]]; then
@@ -632,7 +632,7 @@ getopt() {
 
   _getopt_quote() {
     # Quotes arguments with single quotes, escaping inner single quotes
-    declare s space q=\'
+    declare s space='' q=\'
     for s; do
       printf "$space'%s'" "${s//$q/$q\\$q$q}"
       space=' '
