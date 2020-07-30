@@ -31,7 +31,7 @@ ghettopt() {
 
     # Extract long options from variable declarations.
     for o in $(compgen -A variable opt_); do
-      v=${!o}; o=${o#opt_}; o=${o//_/-}
+      v=${!o:-}; o=${o#opt_}; o=${o//_/-}
       if [[ $v == false || $v == true ]]; then
         longs=( "${longs[@]}" "${o//_/-}" "no-${o//_/-}" )
       else
