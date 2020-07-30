@@ -2,7 +2,7 @@
 
 ghettopt() {
   # ghettopt, simple command-line processing in pure Bash.
-  # version 1.0.1
+  # version 1.0.2
   #
   # Copyright 2008, 2012 Aron Griffis <aron@arongriffis.com>
   #
