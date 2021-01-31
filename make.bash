@@ -27,7 +27,7 @@ main() {
 
 extract_function() {
     declare name="$1" script="$2" inner
-    inner=${script#*$'\n'$name() \{$'\n'}
+    inner=${script#*$name() \{$'\n'}
     inner=${inner%%$'\n'\}*}
     echo "$name() {"
     echo "$inner"
