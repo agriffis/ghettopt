@@ -1,5 +1,3 @@
-#!/bin/bash
-
 ghettopt() {
   # ghettopt, simple command-line processing in pure Bash.
   # version 1.0.2
@@ -171,5 +169,3 @@ ghettopt() {
     _ghettopt_is_function _ghettopt_is_array _ghettopt_is_var
   return $status
 }
-
-# vim:sw=2
