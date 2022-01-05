@@ -7,4 +7,4 @@ getopt.bash:
 clean:
 	rm getopt.bash
 
-.PHONY: clean
+.PHONY: clean getopt.bash example.bash
